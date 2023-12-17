@@ -19,16 +19,15 @@ async function fetchAllPersonalSpaces(): Promise<ApiPersonalSpace[]> {
   let lastSpace: ApiPersonalSpace | null = null;
 
   while (true) {
-    const response = await fetch(
-      `https://${memexDomain}/api/personal/space/list?spacesToWhen=${toWhen}
-    }&maxSpaceCount=50`,
-      {
-        headers: {
-          "X-Memex-Personal-Key-ID": process.env.MEMEX_KEY_ID!,
-          "X-Memex-Personal-Key-Secret": process.env.MEMEX_KEY_SECRET!,
-        },
-      }
-    );
+    const url = `https://${memexDomain}/api/personal/space/list?spacesToWhen=${toWhen}&maxSpaceCount=50`;
+    console.log(`making a request to`, url);
+
+    const response = await fetch(url, {
+      headers: {
+        "X-Memex-Personal-Key-ID": process.env.MEMEX_KEY_ID!,
+        "X-Memex-Personal-Key-Secret": process.env.MEMEX_KEY_SECRET!,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,8 +46,14 @@ async function fetchAllPersonalSpaces(): Promise<ApiPersonalSpace[]> {
     const prevLastSpace = lastSpace;
     lastSpace = data.personalSpaces[data.personalSpaces.length - 1];
     if (prevLastSpace?.updatedWhen === lastSpace.updatedWhen) {
-      // something is broken with the API, trying to decrease the date manually
-      toWhen = toWhen - 1000 * 60 * 60 * 24;
+      console.error(
+        "The API result of the next page returned the same result as the previous page. This is likely a bug in the Memex API. The last space returned previously was:",
+        prevLastSpace,
+        `whereas the last space returned in the current page is:`,
+        lastSpace
+      );
+      throw new Error("Cannot continue, because we would loop forever.");
+      break;
     } else {
       toWhen = lastSpace.updatedWhen;
     }

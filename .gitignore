@@ -145,3 +145,5 @@ dist
 
 /state.json
 /json-output/
+/markdown-output/
+/cache/

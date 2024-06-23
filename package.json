@@ -4,11 +4,14 @@
   "scripts": {
     "start": "bun --env-file=.env.local src/memex.ts"
   },
+  "type": "module",
   "devDependencies": {
     "@types/node": "^20.10.0",
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.4.4",
+    "filenamify": "^6.0.0",
     "remeda": "^1.29.0"
   }
 }
